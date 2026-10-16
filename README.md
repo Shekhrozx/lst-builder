@@ -3,6 +3,22 @@
 Litestar Builder creates Litestar projects and adds domain modules to projects using
 the bundled template in `src/lst_builder/assets`.
 
+## Why use Litestar Builder?
+
+Starting a backend project often means repeatedly setting up the same
+application structure, configuration, database integration, and feature-module
+boilerplate before you can focus on your product. Litestar Builder automates
+that setup by generating a ready-to-customize Litestar project from a
+consistent template, including a `src`-based package layout and starter
+application components.
+
+The `lst-build domain` command extends a generated project with a feature
+module's controller, schemas, service, dependencies, guards, and database
+model. This gives new domains a consistent starting structure and avoids
+manually creating and wiring those files each time. The generated code is
+intended as a starting point that you can adapt; Litestar Builder does not
+replace Litestar or make application-specific design decisions for you.
+
 ## Create a project
 
 ```console
