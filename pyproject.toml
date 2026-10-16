@@ -1,0 +1,23 @@
+[project]
+name = "lst-builder"
+version = "0.0.1"
+description = "Litestar project builder"
+readme = "README.md"
+authors = [
+    { name = "Bryan", email = "shekhrozx@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.5.0",
+]
+
+[[tool.mypy.overrides]]
+module = "pycairn"
+ignore_missing_imports = true
+
+[project.scripts]
+lst-build = "lst_builder.cli:cli"
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"

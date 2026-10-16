@@ -1,0 +1,3 @@
+[submodule "src/lst_builder/assets"]
+	path = src/lst_builder/assets
+	url = git@github.com:Shekhrozx/litestar_tmpl1.git
