@@ -1,6 +1,6 @@
 [project]
 name = "lst-builder"
-version = "0.0.1"
+version = "0.0.2"
 description = "Litestar project builder"
 readme = "README.md"
 authors = [
