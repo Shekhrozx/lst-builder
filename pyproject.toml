@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [[tool.mypy.overrides]]
-module = "pycairn"
+module = "lst_builder"
 ignore_missing_imports = true
 
 [project.scripts]
@@ -21,3 +21,6 @@ lst-build = "lst_builder.cli:cli"
 [build-system]
 requires = ["uv_build>=0.11.6,<0.12.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+wheel-exclude = ["**/assets/.git"]
