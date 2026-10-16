@@ -26,6 +26,60 @@ the snake_case project name and can be set explicitly:
 lst-build project my-project --package my_app
 ```
 
+## Generated project structure
+
+A generated project uses a `src` layout. The package directory is named after
+the selected package name (shown as `my_app` here):
+
+```text
+my-project/
+├── .env.example
+├── .gitignore
+├── .python-version
+├── README.md
+├── pyproject.toml
+├── uv.lock
+└── src/
+    └── my_app/
+        ├── __main__.py
+        ├── __metadata__.py
+        ├── cli/
+        ├── core/
+        │   ├── server/
+        │   ├── settings/
+        │   └── utils/
+        ├── db/
+        │   ├── fixtures/
+        │   ├── migrations/
+        │   └── models/
+        └── domain/
+            └── accounts/
+                ├── controller/
+                ├── schemas/
+                ├── services/
+                ├── deps.py
+                └── guards.py
+```
+
+- The project-root files contain package metadata and dependencies
+  (`pyproject.toml`, `uv.lock`), Python-version and Git settings, and the
+  template README and environment example.
+- `__main__.py` starts the Litestar CLI. `core/server/` configures the
+  application and its plugins, `core/settings/` holds application and
+  infrastructure settings, and `core/utils/` contains shared helpers.
+- `db/models/` holds SQLAlchemy models, `db/migrations/` contains Alembic
+  configuration and migration history, and `db/fixtures/` is the location for
+  fixture data.
+- `domain/accounts/` is the starter account feature. Its controllers define
+  routes, schemas describe request and response data, services hold business
+  and persistence operations, `deps.py` provides injected dependencies, and
+  `guards.py` contains route access checks.
+
+The template's sample CRUD domain and sample model are not copied into a new
+project. Add a feature domain with `lst-build domain inventory`; this creates
+`src/my_app/domain/inventory/` with controller, schema, service, dependency,
+and guard modules, plus `src/my_app/db/models/inventory.py`.
+
 ## Add a domain
 
 Run the command from inside a generated project:
