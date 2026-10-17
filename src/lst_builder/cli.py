@@ -115,6 +115,29 @@ def find_project_root(start: Path) -> Path | None:
     return None
 
 
+def add_builder_dependency(pyproject: Path) -> None:
+    content = pyproject.read_text(encoding="utf-8")
+    project = tomllib.loads(content).get("project", {})
+    dependencies = project.get("dependencies", [])
+    if any(re.match(r"\s*lst[-_]builder(?:\[|[<>=!~;@ ]|$)", dependency, re.IGNORECASE) for dependency in dependencies):
+        return
+
+    project_header = re.search(r"(?m)^\[project\]\s*$", content)
+    if project_header is None:
+        raise click.ClickException("Generated pyproject.toml must define a [project] table.")
+    next_table = re.search(r"(?m)^\[", content[project_header.end() :])
+    project_end = project_header.end() + next_table.start() if next_table else len(content)
+    project_content = content[project_header.end() : project_end]
+    dependencies_match = re.search(r"(?m)^dependencies\s*=\s*\[", project_content)
+    if dependencies_match is None:
+        insert_at = project_header.end()
+        content = content[:insert_at] + '\ndependencies = ["lst-builder"]\n' + content[insert_at:]
+    else:
+        insert_at = project_header.end() + dependencies_match.end()
+        content = content[:insert_at] + '\n    "lst-builder",' + content[insert_at:]
+    pyproject.write_text(content, encoding="utf-8")
+
+
 def find_package_dir(root: Path, explicit: str | None) -> Path | None:
     if explicit:
         for base in (root, root / "src"):
@@ -197,6 +220,7 @@ def project(name: str, directory: Path | None, package: str | None, force: bool)
         map_path=lambda relative: map_project_package(relative, package),
         exclude=PROJECT_SAMPLE_PATHS,
     )
+    add_builder_dependency(root_path / "pyproject.toml")
 
     try:
         subprocess.run(["git", "init"], cwd=root_path, check=True, capture_output=True)
