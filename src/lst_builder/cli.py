@@ -216,13 +216,15 @@ def project(name: str, directory: Path | None, package: str | None, force: bool)
     click.echo(f"  2. Explore the app:      uv run {name} --help")
 
 
-@click.command(name="domain", help="Create a new domain unit inside your litestar project.")
-@click.argument("name", required=True)
+@click.command(name="domain", help="Create one or more domain units inside your litestar project.")
+@click.argument("names", nargs=-1, required=True, metavar="NAME...")
 @click.option("--package", "-p", default=None, help="Project package name (auto-detected by default).")
 @click.option("--force", "-f", is_flag=True, help="Overwrite an existing domain.")
-def domain(name: str, package: str | None, force: bool) -> None:
-    """Create a domain unit NAME (controller, services, deps, guards, schemas, model)."""
-    name = validate_identifier(to_snake(name), "domain")
+def domain(names: tuple[str, ...], package: str | None, force: bool) -> None:
+    """Create domain units (controller, services, deps, guards, schemas, model)."""
+    names = tuple(validate_identifier(to_snake(name), "domain") for name in names)
+    if len(names) != len(set(names)):
+        raise click.BadParameter("Domain names must be unique.", param_hint="NAME...")
     root = find_project_root(Path.cwd())
     if root is None:
         raise click.ClickException("No pyproject.toml found; run this command inside a project.")
@@ -232,27 +234,32 @@ def domain(name: str, package: str | None, force: bool) -> None:
             "Could not locate the project package (expected '<package>/domain' and '__main__.py')."
         )
 
-    domain_dir = package_dir / "domain" / name
-    model_file = package_dir / "db" / "models" / f"{name}.py"
-    if (domain_dir.exists() or model_file.exists()) and not force:
-        raise click.ClickException(f"Domain {name!r} already exists (use --force to overwrite).")
+    for name in names:
+        domain_dir = package_dir / "domain" / name
+        model_file = package_dir / "db" / "models" / f"{name}.py"
+        if (domain_dir.exists() or model_file.exists()) and not force:
+            raise click.ClickException(f"Domain {name!r} already exists (use --force to overwrite).")
 
-    def render(text: str) -> str:
-        return render_domain(text, package_dir.name, name)
+    for name in names:
+        domain_dir = package_dir / "domain" / name
+        model_file = package_dir / "db" / "models" / f"{name}.py"
 
-    domain_dir.mkdir(parents=True, exist_ok=True)
-    (domain_dir / "__init__.py").touch(exist_ok=True)
-    copy_template(DOMAIN_TEMPLATE_DIR, domain_dir, render)
-    model_file.parent.mkdir(parents=True, exist_ok=True)
-    model_file.write_text(render(MODEL_TEMPLATE_FILE.read_text(encoding="utf-8")), encoding="utf-8")
-    model_registered = register_model(package_dir, name)
+        def render(text: str) -> str:
+            return render_domain(text, package_dir.name, name)
 
-    click.echo()
-    click.secho("Domain created successfully", fg="green", bold=True)
-    click.echo(f"  Domain:          {name}")
-    click.echo(f"  Model:           {to_pascal(name)}")
-    click.echo("  Components:      controller, service, dependencies, guards, schemas")
-    click.echo(f"  Migration-ready: {'yes' if model_registered else 'no'}")
+        domain_dir.mkdir(parents=True, exist_ok=True)
+        (domain_dir / "__init__.py").touch(exist_ok=True)
+        copy_template(DOMAIN_TEMPLATE_DIR, domain_dir, render)
+        model_file.parent.mkdir(parents=True, exist_ok=True)
+        model_file.write_text(render(MODEL_TEMPLATE_FILE.read_text(encoding="utf-8")), encoding="utf-8")
+        model_registered = register_model(package_dir, name)
+
+        click.echo()
+        click.secho("Domain created successfully", fg="green", bold=True)
+        click.echo(f"  Domain:          {name}")
+        click.echo(f"  Model:           {to_pascal(name)}")
+        click.echo("  Components:      controller, service, dependencies, guards, schemas")
+        click.echo(f"  Migration-ready: {'yes' if model_registered else 'no'}")
 
 
 

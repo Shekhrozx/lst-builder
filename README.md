@@ -104,6 +104,12 @@ Run the command from inside a generated project:
 lst-build domain inventory
 ```
 
+Add multiple domains by separating their names with spaces:
+
+```console
+lst-build domain inventory billing notifications
+```
+
 The command creates a domain module under `<package>/domain/inventory` and a
 matching database model under `<package>/db/models`. Controllers are discovered
 by the generated project's domain plugin; the model is registered in
